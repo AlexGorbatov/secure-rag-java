@@ -30,57 +30,6 @@ however he phrases the question.
   chunks never reach the model, the answer or the citations.
 - A document the user may not read returns `404`, so its existence is not revealed either.
 
-## Architecture
-
-```mermaid
-flowchart LR
-    user(["User"])
-    idp["Keycloak / Entra ID"]
-
-    subgraph app["secure-rag-java"]
-        direction TB
-        sec["Security<br/><sub>JWT → entitlements</sub>"]
-        ing["Ingestion<br/><sub>Tika → chunk → embed</sub>"]
-        ret["Retrieval<br/><sub>ACL-filtered search</sub>"]
-        chat["Chat<br/><sub>answer + citations</sub>"]
-    end
-
-    subgraph db["PostgreSQL 17"]
-        direction TB
-        docs[("documents")]
-        vec[("vector_store<br/><sub>pgvector</sub>")]
-    end
-
-    llm["OpenAI · Azure OpenAI · ONNX"]
-
-    user -- "JWT" --> sec
-    idp -. "JWKS" .-> sec
-    sec --> ing & chat
-    chat --> ret
-    ing --> docs
-    ing -- "chunks + ACL" --> vec
-    ret -- "filtered by entitlements" --> vec
-    ing & ret & chat -.-> llm
-```
-
-## Query flow
-
-```mermaid
-sequenceDiagram
-    actor Bob
-    participant API as secure-rag-java
-    participant VS as pgvector
-    participant LLM as Chat model
-
-    Bob->>API: question + JWT
-    API->>API: verify token → entitlements
-    API->>VS: similarity search filtered by entitlements
-    VS-->>API: permitted chunks only
-    API->>LLM: prompt with permitted context
-    LLM-->>API: answer
-    API-->>Bob: answer + citations
-```
-
 ## Stack
 
 Java 25 · Spring Boot 4.1 · Spring Security (OAuth2 Resource Server) · Spring AI 2.0 ·

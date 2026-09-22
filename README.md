@@ -29,7 +29,7 @@ however he phrases the question.
 - The access filter runs **inside** the pgvector similarity search, not afterwards. Forbidden
   chunks never reach the model, the answer or the citations.
 - A document the user may not read returns `404`, so its existence is not revealed either.
-
+почс
 ## Stack
 
 Java 25 · Spring Boot 4.1 · Spring Security (OAuth2 Resource Server) · Spring AI 2.0 ·

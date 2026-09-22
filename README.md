@@ -1,0 +1,112 @@
+# secure-rag-java
+
+![Java](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1-6DB33F?logo=springboot&logoColor=white)
+![Spring AI](https://img.shields.io/badge/Spring_AI-2.0-6DB33F?logo=spring&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17_+_pgvector-4169E1?logo=postgresql&logoColor=white)
+![Status](https://img.shields.io/badge/status-bootstrap-orange)
+
+An AI assistant for a company's internal documents that answers each user only from the
+documents that user is allowed to read.
+
+Users upload documents (PDF, DOCX and other formats) and ask questions about them in plain
+language. The service finds the relevant passages, generates an answer with an LLM and returns it
+with links to the source documents.
+
+What sets it apart from a regular RAG chatbot is **need-to-know access control**. Every document
+has an owner and an access list. When Alice and Bob ask the same question, each gets an answer
+built only from their own permitted documents. Bob cannot get anything out of Alice's documents,
+however he phrases the question.
+
+> Early stage: the project skeleton is in place and the features above are being built. See the
+> [roadmap](#roadmap).
+
+### How access is enforced
+
+- The user is identified by a JWT from Keycloak or Microsoft Entra ID. Access rights come only from
+  the token, never from request parameters.
+- Every text chunk in the vector index carries the access list of its source document.
+- The access filter runs **inside** the pgvector similarity search, not afterwards. Forbidden
+  chunks never reach the model, the answer or the citations.
+- A document the user may not read returns `404`, so its existence is not revealed either.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    user(["User"])
+    idp["Keycloak / Entra ID"]
+
+    subgraph app["secure-rag-java"]
+        direction TB
+        sec["Security<br/><sub>JWT → entitlements</sub>"]
+        ing["Ingestion<br/><sub>Tika → chunk → embed</sub>"]
+        ret["Retrieval<br/><sub>ACL-filtered search</sub>"]
+        chat["Chat<br/><sub>answer + citations</sub>"]
+    end
+
+    subgraph db["PostgreSQL 17"]
+        direction TB
+        docs[("documents")]
+        vec[("vector_store<br/><sub>pgvector</sub>")]
+    end
+
+    llm["OpenAI · Azure OpenAI · ONNX"]
+
+    user -- "JWT" --> sec
+    idp -. "JWKS" .-> sec
+    sec --> ing & chat
+    chat --> ret
+    ing --> docs
+    ing -- "chunks + ACL" --> vec
+    ret -- "filtered by entitlements" --> vec
+    ing & ret & chat -.-> llm
+```
+
+## Query flow
+
+```mermaid
+sequenceDiagram
+    actor Bob
+    participant API as secure-rag-java
+    participant VS as pgvector
+    participant LLM as Chat model
+
+    Bob->>API: question + JWT
+    API->>API: verify token → entitlements
+    API->>VS: similarity search filtered by entitlements
+    VS-->>API: permitted chunks only
+    API->>LLM: prompt with permitted context
+    LLM-->>API: answer
+    API-->>Bob: answer + citations
+```
+
+## Stack
+
+Java 25 · Spring Boot 4.1 · Spring Security (OAuth2 Resource Server) · Spring AI 2.0 ·
+PostgreSQL 17 + pgvector · Spring Data JPA · Flyway · Apache Tika · Testcontainers
+
+## Running
+
+Requires JDK 25 and Docker.
+
+```bash
+./mvnw spring-boot:test-run                            # no API keys, local ONNX embeddings
+OPENAI_API_KEY=... ./mvnw spring-boot:run              # OpenAI
+./mvnw spring-boot:run -Dspring-boot.run.profiles=azure # Azure OpenAI, see .env.example
+./mvnw verify                                          # tests
+```
+
+| Profile | Chat | Embeddings |
+|---|---|---|
+| default | OpenAI | OpenAI |
+| `azure` | Azure OpenAI | Azure OpenAI |
+| `test` | — | ONNX (local) |
+
+## Roadmap
+
+- [x] Project bootstrap, profiles, Testcontainers
+- [ ] Keycloak realm with demo users (`alice`, `bob`)
+- [ ] Documents schema and ingestion
+- [ ] ACL-filtered retrieval and chat with citations
+- [ ] Access-control tests: Bob cannot see Alice's documents

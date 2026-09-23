@@ -52,10 +52,34 @@ OPENAI_API_KEY=... ./mvnw spring-boot:run              # OpenAI
 | `azure` | Azure OpenAI | Azure OpenAI |
 | `test` | — | ONNX (local) |
 
+`compose.yaml` also starts Keycloak on http://localhost:8180 with the `securerag` realm
+(admin console: `admin` / `admin`, local only). Demo users:
+
+| User | Password | Groups |
+|---|---|---|
+| `alice` | `alice` | `all-staff`, `hr` |
+| `bob` | `bob` | `all-staff`, `engineering` |
+
+```bash
+curl -s http://localhost:8180/realms/securerag/protocol/openid-connect/token \
+  -d grant_type=password -d client_id=securerag-web -d username=alice -d password=alice
+```
+
+## API
+
+OpenAPI document: `/v3/api-docs` · Swagger UI: `/swagger-ui.html`. In Swagger UI, **Authorize**
+either logs in through Keycloak (OIDC, client `securerag-web`) or accepts a pasted access token.
+Both are public and can be switched off with `OPENAPI_ENABLED=false`.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v1/me` | Caller's identity, groups and roles resolved from the token |
+
 ## Roadmap
 
 - [x] Project bootstrap, profiles, Testcontainers
-- [ ] Keycloak realm with demo users (`alice`, `bob`)
+- [x] Keycloak realm with demo users (`alice`, `bob`)
+- [x] JWT resource server, entitlements from token claims, OpenAPI / Swagger UI
 - [ ] Documents schema and ingestion
 - [ ] ACL-filtered retrieval and chat with citations
 - [ ] Access-control tests: Bob cannot see Alice's documents

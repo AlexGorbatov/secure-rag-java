@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -107,7 +106,7 @@ public class DocumentIngestionService {
      */
     private void cleanUpAfterFailure(UUID id, RuntimeException failure) {
         try {
-            vectorStore.delete(new FilterExpressionBuilder().eq(ChunkMetadata.DOCUMENT_ID, id.toString()).build());
+            vectorStore.delete(ChunkMetadata.belongsTo(id));
             documents.markFailed(id);
         } catch (RuntimeException cleanupFailure) {
             failure.addSuppressed(cleanupFailure);

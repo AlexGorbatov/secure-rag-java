@@ -12,7 +12,6 @@ import com.altronixsoft.securerag.repository.DocumentRepository;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.mock.web.MockMultipartFile;
 
 /**
@@ -46,13 +45,13 @@ public final class IngestionTestSupport {
                 .query("leave")
                 .topK(1000)
                 .similarityThresholdAll()
-                .filterExpression(new FilterExpressionBuilder().eq(ChunkMetadata.DOCUMENT_ID, documentId.toString()).build())
+                .filterExpression(ChunkMetadata.belongsTo(documentId))
                 .build());
     }
 
     public static void remove(DocumentRepository repository, VectorStore vectorStore, List<UUID> documentIds) {
         for (UUID id : documentIds) {
-            vectorStore.delete(new FilterExpressionBuilder().eq(ChunkMetadata.DOCUMENT_ID, id.toString()).build());
+            vectorStore.delete(ChunkMetadata.belongsTo(id));
             repository.deleteById(id);
         }
     }

@@ -68,8 +68,8 @@ curl -s http://localhost:8180/realms/securerag/protocol/openid-connect/token \
 ## API
 
 OpenAPI document: `/v3/api-docs` · Swagger UI: `/swagger-ui.html`. In Swagger UI, **Authorize**
-either logs in through Keycloak (OIDC, client `securerag-web`) or accepts a pasted access token.
-Both are public and can be switched off with `OPENAPI_ENABLED=false`.
+logs in through Keycloak (authorization code + PKCE, client `securerag-web`). Both pages are public
+and can be switched off with `OPENAPI_ENABLED=false`.
 
 | Method | Path | Description |
 |---|---|---|

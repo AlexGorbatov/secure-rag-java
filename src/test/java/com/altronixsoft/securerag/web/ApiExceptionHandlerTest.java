@@ -16,8 +16,10 @@ import java.lang.annotation.Target;
 import java.util.UUID;
 
 import com.altronixsoft.securerag.service.exception.DocumentNotFoundException;
+import com.altronixsoft.securerag.service.exception.DocumentTooLargeException;
 import com.altronixsoft.securerag.service.exception.GroupNotAllowedException;
 import com.altronixsoft.securerag.service.exception.IngestionFailedException;
+import com.altronixsoft.securerag.service.exception.UnreadableDocumentException;
 import com.altronixsoft.securerag.service.exception.UnsupportedDocumentException;
 import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
@@ -60,6 +62,22 @@ class ApiExceptionHandlerTest {
         mvc.perform(get("/throw/unsupported"))
                 .andExpect(status().isUnsupportedMediaType())
                 .andExpect(jsonPath("$.detail").value("Unsupported document type. Upload PDF, DOCX, Markdown or plain text."));
+    }
+
+    @Test
+    void unreadableDocumentIs422AndHidesParserMessage() throws Exception {
+        String body = mvc.perform(get("/throw/unreadable"))
+                .andExpect(status().isUnprocessableContent())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(body).doesNotContain("PDFBox");
+    }
+
+    @Test
+    void tooMuchTextIs413() throws Exception {
+        mvc.perform(get("/throw/too-much-text"))
+                .andExpect(status().isContentTooLarge())
+                .andExpect(jsonPath("$.detail").value("The document contains more text than allowed"));
     }
 
     @Test
@@ -146,6 +164,17 @@ class ApiExceptionHandlerTest {
         @GetMapping("/throw/unsupported")
         void unsupported() {
             throw new UnsupportedDocumentException("image/png");
+        }
+
+        @GetMapping("/throw/unreadable")
+        void unreadable() {
+            throw new UnreadableDocumentException("Parser rejected the file",
+                    new IllegalStateException("PDFBox: missing root object"));
+        }
+
+        @GetMapping("/throw/too-much-text")
+        void tooMuchText() {
+            throw new DocumentTooLargeException(2_000_000, new IllegalStateException("write limit"));
         }
 
         @GetMapping("/throw/group")

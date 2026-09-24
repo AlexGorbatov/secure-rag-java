@@ -1,8 +1,10 @@
 package com.altronixsoft.securerag.web;
 
 import com.altronixsoft.securerag.service.exception.DocumentNotFoundException;
+import com.altronixsoft.securerag.service.exception.DocumentTooLargeException;
 import com.altronixsoft.securerag.service.exception.GroupNotAllowedException;
 import com.altronixsoft.securerag.service.exception.IngestionFailedException;
+import com.altronixsoft.securerag.service.exception.UnreadableDocumentException;
 import com.altronixsoft.securerag.service.exception.UnsupportedDocumentException;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -47,6 +49,20 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         log.info("Rejected upload of unsupported type {}", e.getDocumentType());
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
                 "Unsupported document type. Upload PDF, DOCX, Markdown or plain text.");
+    }
+
+    @ExceptionHandler(UnreadableDocumentException.class)
+    ProblemDetail unreadableDocument(UnreadableDocumentException e) {
+        log.info("Rejected unreadable upload: {}", e.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT,
+                "The document has no readable text. It may be empty, encrypted, corrupted or a scanned image.");
+    }
+
+    @ExceptionHandler(DocumentTooLargeException.class)
+    ProblemDetail documentTooLarge(DocumentTooLargeException e) {
+        log.info("Rejected upload: {}", e.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONTENT_TOO_LARGE,
+                "The document contains more text than allowed");
     }
 
     @ExceptionHandler(GroupNotAllowedException.class)

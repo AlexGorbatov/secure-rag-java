@@ -25,7 +25,6 @@ class CurrentUserController {
 
     @GetMapping
     @Operation(
-            summary = "Who am I",
             description = "Returns the caller's identity and the groups and roles that decide which documents they can see.")
     @ApiResponse(responseCode = "200", description = "Entitlements of the caller")
     @ApiResponse(responseCode = "401", description = "Missing, expired or invalid access token")

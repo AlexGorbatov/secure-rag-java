@@ -74,12 +74,19 @@ and can be switched off with `OPENAPI_ENABLED=false`.
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/v1/me` | Caller's identity, groups and roles resolved from the token |
+| `POST` | `/api/v1/documents` | Upload a PDF, DOCX, Markdown or text file; optionally share it with your groups |
+| `GET` | `/api/v1/documents` | Your documents and those shared with your groups |
+| `GET` | `/api/v1/documents/{id}` | One document; `404` if it is not visible to you |
+| `DELETE` | `/api/v1/documents/{id}` | Delete your own document and all its chunks |
+| `POST` | `/api/v1/search` | Semantic search over the documents you may read |
+| `POST` | `/api/v1/chat` | Answer a question from the documents you may read, with citations |
 
 ## Roadmap
 
 - [x] Project bootstrap, profiles, Testcontainers
 - [x] Keycloak realm with demo users (`alice`, `bob`)
 - [x] JWT resource server, entitlements from token claims, OpenAPI / Swagger UI
-- [ ] Documents schema and ingestion
-- [ ] ACL-filtered retrieval and chat with citations
-- [ ] Access-control tests: Bob cannot see Alice's documents
+- [x] Documents schema and ingestion
+- [x] ACL-filtered retrieval and chat with citations
+- [x] Access-control tests: Bob cannot see Alice's documents (search, chat, get, delete)
+- [ ] Operations: actuator, logging, timeouts, Azure OpenAI and Entra ID

@@ -9,6 +9,15 @@ import org.testcontainers.utility.DockerImageName;
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 
+    /**
+     * The test profile has no real chat model (spring.ai.model.chat=none). This stub takes its place,
+     * so the application context starts and no test can call a paid API.
+     */
+    @Bean
+    StubChatModel chatModel() {
+        return new StubChatModel();
+    }
+
     @Bean
     @ServiceConnection
     PostgreSQLContainer pgvectorContainer() {

@@ -1,5 +1,6 @@
 package com.altronixsoft.securerag.web;
 
+import com.altronixsoft.securerag.service.exception.AnswerGenerationFailedException;
 import com.altronixsoft.securerag.service.exception.DocumentNotFoundException;
 import com.altronixsoft.securerag.service.exception.DocumentTooLargeException;
 import com.altronixsoft.securerag.service.exception.GroupNotAllowedException;
@@ -79,6 +80,13 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 "The document could not be processed");
         problem.setProperty("documentId", e.getDocumentId());
         return problem;
+    }
+
+    @ExceptionHandler(AnswerGenerationFailedException.class)
+    ProblemDetail answerGenerationFailed(AnswerGenerationFailedException e) {
+        log.error("Answer generation failed: {}", e.getMessage(), e.getCause());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY,
+                "The assistant could not answer right now. Please try again later.");
     }
 
     /**

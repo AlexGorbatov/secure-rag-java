@@ -66,3 +66,4 @@ build/
 ### AI assistant config (local only) ###
 CLAUDE.md
 .claude/
+.superpowers/

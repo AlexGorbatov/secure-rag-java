@@ -4,7 +4,7 @@
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![Spring AI](https://img.shields.io/badge/Spring_AI-2.0-6DB33F?logo=spring&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17_+_pgvector-4169E1?logo=postgresql&logoColor=white)
-![Status](https://img.shields.io/badge/status-bootstrap-orange)
+![Status](https://img.shields.io/badge/status-feature--complete-brightgreen)
 
 An AI assistant for a company's internal documents that answers each user only from the
 documents that user is allowed to read.
@@ -18,9 +18,6 @@ has an owner and an access list. When Alice and Bob ask the same question, each 
 built only from their own permitted documents. Bob cannot get anything out of Alice's documents,
 however he phrases the question.
 
-> Early stage: the project skeleton is in place and the features above are being built. See the
-> [roadmap](#roadmap).
-
 ### How access is enforced
 
 - The user is identified by a JWT from Keycloak or Microsoft Entra ID. Access rights come only from
@@ -29,7 +26,7 @@ however he phrases the question.
 - The access filter runs **inside** the pgvector similarity search, not afterwards. Forbidden
   chunks never reach the model, the answer or the citations.
 - A document the user may not read returns `404`, so its existence is not revealed either.
-почс
+
 ## Stack
 
 Java 25 · Spring Boot 4.1 · Spring Security (OAuth2 Resource Server) · Spring AI 2.0 ·

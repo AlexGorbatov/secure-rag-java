@@ -17,7 +17,8 @@ class SecurityConfig {
      * The only routes reachable without a token. Each one exposes no document data.
      */
     static final String[] PUBLIC_GET_ENDPOINTS = {
-            "/actuator/health",       // liveness/readiness probes
+            "/actuator/health",       // UP/DOWN only: details and components are never shown
+            "/actuator/health/**",    // Kubernetes liveness and readiness probes, same content
             "/v3/api-docs/**",        // OpenAPI document; disable with OPENAPI_ENABLED=false
             "/swagger-ui.html",       // Swagger UI; same switch
             "/swagger-ui/**"

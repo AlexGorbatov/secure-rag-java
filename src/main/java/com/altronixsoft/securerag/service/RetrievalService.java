@@ -2,6 +2,7 @@ package com.altronixsoft.securerag.service;
 
 import com.altronixsoft.securerag.config.RetrievalProperties;
 import com.altronixsoft.securerag.model.Entitlements;
+import com.altronixsoft.securerag.service.exception.SearchUnavailableException;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -31,13 +32,22 @@ public class RetrievalService {
 
     public List<Document> findRelevant(String query, int topK, Entitlements caller) {
         return AccessFilter.visibleTo(caller)
-                .map(filter -> vectorStore.similaritySearch(SearchRequest.builder()
+                .map(filter -> search(SearchRequest.builder()
                         .query(query)
                         .topK(topK)
                         .similarityThreshold(properties.similarityThreshold())
                         .filterExpression(filter)
                         .build()))
                 .orElseGet(List::of);
+    }
+
+    /** The query is embedded by a remote provider first, so an outage there surfaces here. */
+    private List<Document> search(SearchRequest request) {
+        try {
+            return vectorStore.similaritySearch(request);
+        } catch (RuntimeException e) {
+            throw new SearchUnavailableException(e);
+        }
     }
 
 }

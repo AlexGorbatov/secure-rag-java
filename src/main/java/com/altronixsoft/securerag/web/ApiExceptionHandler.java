@@ -5,6 +5,7 @@ import com.altronixsoft.securerag.service.exception.DocumentNotFoundException;
 import com.altronixsoft.securerag.service.exception.DocumentTooLargeException;
 import com.altronixsoft.securerag.service.exception.GroupNotAllowedException;
 import com.altronixsoft.securerag.service.exception.IngestionFailedException;
+import com.altronixsoft.securerag.service.exception.SearchUnavailableException;
 import com.altronixsoft.securerag.service.exception.UnreadableDocumentException;
 import com.altronixsoft.securerag.service.exception.UnsupportedDocumentException;
 import lombok.extern.slf4j.Slf4j;
@@ -84,9 +85,16 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(AnswerGenerationFailedException.class)
     ProblemDetail answerGenerationFailed(AnswerGenerationFailedException e) {
-        log.error("Answer generation failed: {}", e.getMessage(), e.getCause());
+        log.error("Answer generation failed", e);
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY,
                 "The assistant could not answer right now. Please try again later.");
+    }
+
+    @ExceptionHandler(SearchUnavailableException.class)
+    ProblemDetail searchUnavailable(SearchUnavailableException e) {
+        log.error("Search unavailable", e);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
+                "Search is temporarily unavailable. Please try again later.");
     }
 
     /**

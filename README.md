@@ -52,6 +52,12 @@ OPENAI_API_KEY=... ./mvnw spring-boot:run              # OpenAI
 | `azure` | Azure OpenAI | Azure OpenAI |
 | `test` | — | ONNX (local) |
 
+Identity provider: Keycloak by default; `--spring.profiles.active=entra` switches to Microsoft Entra ID
+(combine as `azure,entra`). Variables for every profile are in [`.env.example`](.env.example).
+
+In production set `OPENAPI_ENABLED=false`. Actuator exposes only `health` (with liveness/readiness
+probes, status only) and `info`.
+
 `compose.yaml` also starts Keycloak on http://localhost:8180 with the `securerag` realm
 (admin console: `admin` / `admin`, local only). Demo users:
 
@@ -89,4 +95,4 @@ and can be switched off with `OPENAPI_ENABLED=false`.
 - [x] Documents schema and ingestion
 - [x] ACL-filtered retrieval and chat with citations
 - [x] Access-control tests: Bob cannot see Alice's documents (search, chat, get, delete)
-- [ ] Operations: actuator, logging, timeouts, Azure OpenAI and Entra ID
+- [x] Operations: actuator, logging, timeouts, Azure OpenAI and Entra ID

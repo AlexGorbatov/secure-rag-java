@@ -21,7 +21,11 @@ class SecurityConfig {
             "/actuator/health/**",    // Kubernetes liveness and readiness probes, same content
             "/v3/api-docs/**",        // OpenAPI document; disable with OPENAPI_ENABLED=false
             "/swagger-ui.html",       // Swagger UI; same switch
-            "/swagger-ui/**"
+            "/swagger-ui/**",
+            "/",                      // Static frontend bundle (index.html); public JS/CSS, no document data
+            "/index.html",
+            "/favicon.ico",
+            "/_next/**"               // Next.js static export chunks
     };
 
     @Bean

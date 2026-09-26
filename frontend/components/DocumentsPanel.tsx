@@ -16,16 +16,25 @@ export function DocumentsPanel({ token, user, onUnauthorized }: DocumentsPanelPr
   const [file, setFile] = useState<File | null>(null);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   async function loadDocuments() {
     try {
       setDocuments(await fetchDocuments(token));
+      setLoadError(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         onUnauthorized();
+        return;
       }
+      setLoadError(
+        err instanceof ApiError
+          ? err.message
+          : "Could not load your documents. Please try again later.",
+      );
     } finally {
       setLoading(false);
     }
@@ -67,6 +76,8 @@ export function DocumentsPanel({ token, user, onUnauthorized }: DocumentsPanelPr
           return;
         }
         setUploadError(err.message);
+      } else {
+        setUploadError("Could not upload the document. Please try again later.");
       }
     }
   }
@@ -81,7 +92,10 @@ export function DocumentsPanel({ token, user, onUnauthorized }: DocumentsPanelPr
         return;
       }
       setToast("Could not delete — not found, or you are not the owner.");
-      setTimeout(() => setToast(null), 4000);
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+      toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
     }
   }
 
@@ -91,6 +105,8 @@ export function DocumentsPanel({ token, user, onUnauthorized }: DocumentsPanelPr
 
       {loading ? (
         <p className="text-sm text-[var(--color-text-muted)]">Loading...</p>
+      ) : loadError ? (
+        <p className="mb-4 text-sm text-red-400">{loadError}</p>
       ) : documents.length === 0 ? (
         <p className="mb-4 text-sm text-[var(--color-text-muted)]">
           No documents yet — upload one to get started.

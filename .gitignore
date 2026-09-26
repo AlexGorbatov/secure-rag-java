@@ -67,3 +67,11 @@ build/
 CLAUDE.md
 .claude/
 .superpowers/
+
+### Frontend (Next.js) ###
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+src/main/resources/static/*
+!src/main/resources/static/.gitkeep
+frontend/.env.local

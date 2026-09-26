@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0a0f;
+  --color-bg-violet: #1b1235;
+  --color-panel-border: rgba(255, 255, 255, 0.09);
+  --color-text: #e7e7ee;
+  --color-text-muted: #9a9aac;
+  --color-accent-from: #8b5cf6;
+  --color-accent-to: #22d3ee;
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 0%, var(--color-bg-violet) 0%, var(--color-bg) 55%),
+    var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 1rem;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--color-accent-from), var(--color-accent-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-button {
+  background: linear-gradient(90deg, var(--color-accent-from), var(--color-accent-to));
+  color: var(--color-bg);
+  box-shadow: 0 0 28px -4px rgba(139, 92, 246, 0.65);
+}

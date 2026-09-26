@@ -18,6 +18,7 @@ export function AskPanel({ token, onUnauthorized }: AskPanelProps) {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    setAnswer(null);
     setAsking(true);
     try {
       const result = await askQuestion(token, question);
@@ -42,18 +43,18 @@ export function AskPanel({ token, onUnauthorized }: AskPanelProps) {
 
   return (
     <section className="glass-panel p-8 text-center">
-      <p className="mb-4 text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
-        Ask about the documents you have access to
-      </p>
       <form onSubmit={handleSubmit} className="mx-auto flex max-w-xl flex-col items-center gap-3">
-        <input
-          className="w-full rounded-2xl border border-[var(--color-panel-border)] bg-white/5 px-4 py-3 text-center text-sm outline-none focus:border-[var(--color-accent-to)]"
-          placeholder="What is the salary band for a Senior Engineer?"
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          maxLength={2000}
-          required
-        />
+        <label className="block w-full text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
+          Ask about the documents you have access to
+          <input
+            className="mt-1 w-full rounded-2xl border border-[var(--color-panel-border)] bg-white/5 px-4 py-3 text-center text-sm outline-none focus:border-[var(--color-accent-to)]"
+            placeholder="What is the salary band for a Senior Engineer?"
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            maxLength={2000}
+            required
+          />
+        </label>
         <button
           type="submit"
           disabled={asking || question.trim().length === 0}

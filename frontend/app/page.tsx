@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AskPanel } from "@/components/AskPanel";
+import { DocumentsPanel } from "@/components/DocumentsPanel";
 import { Header } from "@/components/Header";
 import { LoginCard } from "@/components/LoginCard";
 import { fetchCurrentUser } from "@/lib/api";
@@ -67,6 +68,7 @@ export default function Home() {
     <main className="mx-auto max-w-3xl px-4 py-8">
       <Header user={user} onLogout={handleLogout} />
       <AskPanel token={token} onUnauthorized={handleUnauthorized} />
+      <DocumentsPanel token={token} user={user} onUnauthorized={handleUnauthorized} />
     </main>
   );
 }

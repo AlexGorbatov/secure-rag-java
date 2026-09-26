@@ -1,0 +1,9 @@
+[
+  { "file": "employee-handbook.md", "groups": ["all-staff"] },
+  { "file": "remote-work-policy.md", "groups": ["all-staff"] },
+  { "file": "salary-bands-2026.md", "groups": ["hr"] },
+  { "file": "hiring-plan.md", "groups": ["hr"] },
+  { "file": "q3-budget.md", "groups": ["finance"] },
+  { "file": "vendor-contracts.md", "groups": ["finance"] },
+  { "file": "architecture-overview.md", "groups": ["engineering"] }
+]

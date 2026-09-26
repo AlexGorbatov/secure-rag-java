@@ -106,6 +106,28 @@ class ChatApiTest {
     }
 
     @Test
+    void aliceGetsGroundedAnswerWithUsage() throws Exception {
+        chatModel.reset();
+        chatModel.replyWithUsage(30, 12);
+        chatModel.replyWith("Engineers earn within the 2026 bands [1].");
+
+        mvc.perform(post(CHAT).contentType(MediaType.APPLICATION_JSON).content(question("What do engineers earn?")).with(alice()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.grounded").value(true))
+                .andExpect(jsonPath("$.usage.promptTokens").value(30))
+                .andExpect(jsonPath("$.usage.completionTokens").value(12));
+    }
+
+    @Test
+    void bobGetsUngroundedAnswerWithZeroUsage() throws Exception {
+        mvc.perform(post(CHAT).contentType(MediaType.APPLICATION_JSON).content(question("What is the weather today?")).with(bob()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.grounded").value(false))
+                .andExpect(jsonPath("$.usage.promptTokens").value(0))
+                .andExpect(jsonPath("$.usage.completionTokens").value(0));
+    }
+
+    @Test
     void modelFailureIs502WithoutProviderDetails() throws Exception {
         chatModel.failWith(new IllegalStateException("OpenAI 429: rate limit for org-secret-123"));
 

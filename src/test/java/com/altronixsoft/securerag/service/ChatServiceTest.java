@@ -134,6 +134,27 @@ class ChatServiceTest {
                 .isInstanceOf(AnswerGenerationFailedException.class);
     }
 
+    @Test
+    void withoutPermittedContextTheAnswerIsNotGrounded() {
+        addChunk(UUID.randomUUID(), "hr-salaries.txt", ALICE_HR_TEXT, "sub-alice", List.of("hr"));
+
+        ChatAnswer answer = chatService.answer(QUESTION, BOB);
+
+        assertThat(answer.grounded()).isFalse();
+        assertThat(answer.usage()).isEqualTo(new Usage(0, 0));
+    }
+
+    @Test
+    void answeredQuestionIsGroundedAndCarriesModelUsage() {
+        addChunk(UUID.randomUUID(), "hr-salaries.txt", ALICE_HR_TEXT, "sub-alice", List.of("hr"));
+        chatModel.replyWithUsage(42, 17);
+
+        ChatAnswer answer = chatService.answer(QUESTION, ALICE);
+
+        assertThat(answer.grounded()).isTrue();
+        assertThat(answer.usage()).isEqualTo(new Usage(42, 17));
+    }
+
     private void addChunk(UUID documentId, String title, String text, String owner, List<String> groups) {
         Document chunk = Document.builder()
                 .id(UUID.randomUUID().toString())

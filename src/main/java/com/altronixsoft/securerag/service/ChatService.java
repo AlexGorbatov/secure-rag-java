@@ -4,6 +4,7 @@ import com.altronixsoft.securerag.model.Entitlements;
 import com.altronixsoft.securerag.service.exception.AnswerGenerationFailedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,8 @@ public class ChatService {
     static final String NO_CONTEXT_ANSWER =
             "I could not find information about this in the documents available to you.";
 
+    private static final Usage NO_USAGE = new Usage(0, 0);
+
     private final RetrievalService retrievalService;
     private final PromptBuilder promptBuilder;
     private final ChatClient chatClient;
@@ -40,28 +43,39 @@ public class ChatService {
         List<Document> chunks = retrievalService.findRelevant(question, caller);
         if (chunks.isEmpty()) {
             // No model call: without context it would answer from general knowledge.
-            return new ChatAnswer(NO_CONTEXT_ANSWER, List.of());
+            return new ChatAnswer(NO_CONTEXT_ANSWER, List.of(), false, NO_USAGE);
         }
-        String answer = generate(promptBuilder.build(question, chunks));
+        ChatResponse response = generate(promptBuilder.build(question, chunks));
+        String answer = response.getResult().getOutput().getText();
         log.info("Answered a question from {} chunks", chunks.size());
-        return new ChatAnswer(answer, citationsOf(chunks));
+        return new ChatAnswer(answer, citationsOf(chunks), true, usageOf(response));
     }
 
-    private String generate(PromptBuilder.Prompt prompt) {
-        String answer;
+    private ChatResponse generate(PromptBuilder.Prompt prompt) {
+        ChatResponse response;
         try {
-            answer = chatClient.prompt()
+            response = chatClient.prompt()
                     .system(prompt.system())
                     .user(prompt.user())
                     .call()
-                    .content();
+                    .chatResponse();
         } catch (RuntimeException e) {
             throw new AnswerGenerationFailedException("Chat model call failed", e);
         }
-        if (answer == null || answer.isBlank()) {
+        String text = response == null ? null : response.getResult().getOutput().getText();
+        if (text == null || text.isBlank()) {
             throw new AnswerGenerationFailedException("Chat model returned no text", null);
         }
-        return answer;
+        return response;
+    }
+
+    private static Usage usageOf(ChatResponse response) {
+        org.springframework.ai.chat.metadata.Usage usage = response.getMetadata().getUsage();
+        return new Usage(orZero(usage.getPromptTokens()), orZero(usage.getCompletionTokens()));
+    }
+
+    private static int orZero(Integer value) {
+        return value == null ? 0 : value;
     }
 
     /** One citation per document, in the order its first chunk was retrieved. */

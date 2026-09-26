@@ -230,7 +230,9 @@ class AccessMatrixTest {
             mvc.perform(delete(DOCUMENTS + "/" + document).with(caller)).andExpect(status().isNotFound());
         }
         assertThat(ids(search(caller), "$[*].documentId")).doesNotContainAnyElementsOf(othersDocuments);
-        assertThat(ids(chat(caller), "$.citations[*].documentId")).isEmpty();
+        String chatBody = chat(caller);
+        assertThat(ids(chatBody, "$.citations[*].documentId")).isEmpty();
+        assertThat((Boolean) JsonPath.read(chatBody, "$.grounded")).isFalse();
         assertThat(chatModel.prompts()).isEmpty();
     }
 

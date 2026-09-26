@@ -55,6 +55,20 @@ Identity provider: Keycloak by default; `--spring.profiles.active=entra` switche
 In production set `OPENAPI_ENABLED=false`. Actuator exposes only `health` (with liveness/readiness
 probes, status only) and `info`.
 
+### Frontend
+
+A single-page UI (login, ask a question, upload/list/delete documents) lives in `frontend/` and is
+statically exported into `src/main/resources/static/`, so it's served by the same app on the same
+port — no separate process.
+
+```bash
+cd frontend && npm install && npm run build   # builds and copies into src/main/resources/static
+cd .. && ./mvnw spring-boot:test-run           # open http://localhost:8080
+```
+
+Rebuild the frontend (`npm run build`) and restart the backend after every UI change — there's no
+dev-server proxy. Keycloak/client config for local login lives in `frontend/.env.example`.
+
 `compose.yaml` also starts Keycloak on http://localhost:8180 with the `securerag` realm
 (admin console: `admin` / `admin`, local only). Demo users:
 

@@ -24,6 +24,7 @@ public class StubChatModel implements ChatModel {
     private volatile String reply = DEFAULT_REPLY;
     private volatile DefaultUsage usage = DEFAULT_USAGE;
     private volatile RuntimeException failure;
+    private volatile boolean replyWithNoGenerations = false;
 
     @Override
     public ChatResponse call(Prompt prompt) {
@@ -32,6 +33,9 @@ public class StubChatModel implements ChatModel {
             throw failure;
         }
         ChatResponseMetadata metadata = ChatResponseMetadata.builder().usage(usage).build();
+        if (replyWithNoGenerations) {
+            return new ChatResponse(List.of(), metadata);
+        }
         return new ChatResponse(List.of(new Generation(new AssistantMessage(reply))), metadata);
     }
 
@@ -56,11 +60,17 @@ public class StubChatModel implements ChatModel {
         this.failure = exception;
     }
 
+    /** Simulates a provider response with no generations at all (empty result, e.g. a content-filter refusal). */
+    public void replyWithNoGenerations() {
+        this.replyWithNoGenerations = true;
+    }
+
     public void reset() {
         prompts.clear();
         reply = DEFAULT_REPLY;
         usage = DEFAULT_USAGE;
         failure = null;
+        replyWithNoGenerations = false;
     }
 
 }

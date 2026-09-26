@@ -5,6 +5,7 @@ import com.altronixsoft.securerag.service.exception.AnswerGenerationFailedExcept
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.document.Document;
 import org.springframework.stereotype.Service;
 
@@ -45,13 +46,12 @@ public class ChatService {
             // No model call: without context it would answer from general knowledge.
             return new ChatAnswer(NO_CONTEXT_ANSWER, List.of(), false, NO_USAGE);
         }
-        ChatResponse response = generate(promptBuilder.build(question, chunks));
-        String answer = response.getResult().getOutput().getText();
+        Generated generated = generate(promptBuilder.build(question, chunks));
         log.info("Answered a question from {} chunks", chunks.size());
-        return new ChatAnswer(answer, citationsOf(chunks), true, usageOf(response));
+        return new ChatAnswer(generated.text(), citationsOf(chunks), true, usageOf(generated.response()));
     }
 
-    private ChatResponse generate(PromptBuilder.Prompt prompt) {
+    private Generated generate(PromptBuilder.Prompt prompt) {
         ChatResponse response;
         try {
             response = chatClient.prompt()
@@ -62,11 +62,15 @@ public class ChatService {
         } catch (RuntimeException e) {
             throw new AnswerGenerationFailedException("Chat model call failed", e);
         }
-        String text = response == null ? null : response.getResult().getOutput().getText();
+        Generation result = response == null ? null : response.getResult();
+        String text = result == null ? null : result.getOutput().getText();
         if (text == null || text.isBlank()) {
             throw new AnswerGenerationFailedException("Chat model returned no text", null);
         }
-        return response;
+        return new Generated(response, text);
+    }
+
+    private record Generated(ChatResponse response, String text) {
     }
 
     private static Usage usageOf(ChatResponse response) {

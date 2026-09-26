@@ -135,6 +135,15 @@ class ChatServiceTest {
     }
 
     @Test
+    void noGenerationsAtAllBecomesAnswerGenerationFailedNotAnException() {
+        addChunk(UUID.randomUUID(), "hr-salaries.txt", ALICE_HR_TEXT, "sub-alice", List.of());
+        chatModel.replyWithNoGenerations();
+
+        assertThatThrownBy(() -> chatService.answer(QUESTION, ALICE))
+                .isInstanceOf(AnswerGenerationFailedException.class);
+    }
+
+    @Test
     void withoutPermittedContextTheAnswerIsNotGrounded() {
         addChunk(UUID.randomUUID(), "hr-salaries.txt", ALICE_HR_TEXT, "sub-alice", List.of("hr"));
 

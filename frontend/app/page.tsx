@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AskPanel } from "@/components/AskPanel";
 import { Header } from "@/components/Header";
 import { LoginCard } from "@/components/LoginCard";
 import { fetchCurrentUser } from "@/lib/api";
@@ -65,10 +66,7 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
       <Header user={user} onLogout={handleLogout} />
-      <p className="text-sm text-[var(--color-text-muted)]">
-        Signed in. Ask panel and documents panel land in the next tasks.
-      </p>
-      {/* handleUnauthorized is wired into AskPanel/DocumentsPanel in Tasks 5 and 6 */}
+      <AskPanel token={token} onUnauthorized={handleUnauthorized} />
     </main>
   );
 }

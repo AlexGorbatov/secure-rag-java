@@ -171,6 +171,26 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>test-run</id>
+                        <!-- phase=none: this must NOT bind into the normal build lifecycle (it did,
+                             without this, and made `mvn package`/`verify` try to launch the whole
+                             app as a side effect). It only supplies configuration for invoking the
+                             test-run goal directly: `./mvnw spring-boot:test-run`. -->
+                        <phase>none</phase>
+                        <goals>
+                            <goal>test-run</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Without this, main-class auto-detection can pick SecureRagJavaApplication
+                                 (real OpenAI, no demo data) instead of TestSecureRagJavaApplication
+                                 (test profile, local ONNX embeddings, demo seed data) — nondeterministically,
+                                 since both are valid main methods on test-run's combined classpath. -->
+                            <mainClass>com.altronixsoft.securerag.TestSecureRagJavaApplication</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

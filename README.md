@@ -32,25 +32,53 @@ however he phrases the question.
 Java 25 · Spring Boot 4.1 · Spring Security (OAuth2 Resource Server) · Spring AI 2.0 ·
 PostgreSQL 17 + pgvector · Spring Data JPA · Flyway · Apache Tika · Testcontainers
 
+### Why these choices
+
+**One database, not a database plus a separate vector store.** Document metadata, the access-control
+list and the embeddings all live in the same PostgreSQL instance (pgvector extension). That isn't a
+shortcut — it's what makes the core guarantee of this project actually enforceable: the ACL filter
+runs as part of the *same* SQL query that does the similarity search (a `jsonpath` predicate inside
+the `WHERE` clause — see `AccessFilter`), not as a second call to a second system afterward. A
+document's access list and its vectors can never drift out of sync because they're never
+transactionally separate in the first place. It also means one backup story, one HA story, and
+standard Postgres tooling (`pg_dump`, replication, `EXPLAIN`) instead of operating a second piece of
+infrastructure just for vectors.
+
+**The model provider is a configuration choice, not a code dependency.** Business logic depends only
+on Spring AI's `ChatModel` / `EmbeddingModel` / `VectorStore` abstractions — never on a vendor SDK
+directly. That's proven by having three genuinely different chat backends behind the same interface,
+selected purely by Spring profile:
+
+| Profile | Chat | Embeddings | Good for |
+|---|---|---|---|
+| default | OpenAI | OpenAI | production |
+| `azure` | Azure OpenAI | Azure OpenAI | regulated / enterprise environments already on Azure |
+| `test` (+ `LM_STUDIO=1`) | Local, via [LM Studio](https://lmstudio.ai) | Local ONNX | fully offline demo — no API key, no cost, no data leaves the machine |
+
+Embeddings stay on the same local ONNX model (`all-MiniLM-L6-v2`) in every non-production profile,
+regardless of which chat backend is active — the vector dimension is fixed in the schema, so switching
+chat providers never risks a silent mismatch there.
+
 ## Running
 
 Requires JDK 25 and Docker.
 
 ```bash
-./mvnw spring-boot:test-run                            # no API keys, local ONNX embeddings
-OPENAI_API_KEY=... ./mvnw spring-boot:run              # OpenAI
+./mvnw spring-boot:test-run                             # no API keys, local ONNX embeddings, demo data
+LM_STUDIO=1 ./mvnw spring-boot:test-run                 # same, but real answers via a local LM Studio server
+OPENAI_API_KEY=... ./mvnw spring-boot:run               # OpenAI
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=azure # Azure OpenAI, see .env.example
-./mvnw verify                                          # tests
+./mvnw verify                                           # tests
 ```
-
-| Profile | Chat | Embeddings |
-|---|---|---|
-| default | OpenAI | OpenAI |
-| `azure` | Azure OpenAI | Azure OpenAI |
-| `test` | — | ONNX (local) |
 
 Identity provider: Keycloak by default; `--spring.profiles.active=entra` switches to Microsoft Entra ID
 (combine as `azure,entra`). Variables for every profile are in [`.env.example`](.env.example).
+
+`LM_STUDIO=1` is a local convenience, not a deployment profile: it swaps the stub chat model that the
+automated test suite always uses for a real one, by pointing at LM Studio's OpenAI-compatible local
+server (default `http://127.0.0.1:1234`, overridable with `LMSTUDIO_BASE_URL` / `LMSTUDIO_MODEL`
+env vars — see `application-lmstudio.properties`). It needs LM Studio running with a chat model loaded;
+without the flag, `test-run` behaves exactly as documented above.
 
 In production set `OPENAPI_ENABLED=false`. Actuator exposes only `health` (with liveness/readiness
 probes, status only) and `info`.

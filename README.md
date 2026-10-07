@@ -5,6 +5,7 @@
 ![Spring AI](https://img.shields.io/badge/Spring_AI-2.0-6DB33F?logo=spring&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17_+_pgvector-4169E1?logo=postgresql&logoColor=white)
 ![Status](https://img.shields.io/badge/status-feature--complete-brightgreen)
+![License](https://img.shields.io/badge/license-PolyForm_Noncommercial-blue)
 
 An AI assistant for a company's internal documents that answers each user only from the
 documents that user is allowed to read.
@@ -160,3 +161,9 @@ and can be switched off with `OPENAPI_ENABLED=false`.
 - [x] ACL-filtered retrieval and chat with citations
 - [x] Access-control tests: Bob cannot see Alice's documents (search, chat, get, delete)
 - [x] Operations: actuator, logging, timeouts, Azure OpenAI and Entra ID
+
+## License
+
+[PolyForm Noncommercial 1.0.0](LICENSE.md): you may read, run and modify the code for any noncommercial purpose
+(learning, evaluation, research, personal projects). Commercial use — in a business, for clients, or as part of a
+product or service — needs a separate license from the author; [get in touch](https://github.com/AlexGorbatov).

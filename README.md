@@ -18,6 +18,25 @@ has an owner and an access list. When Alice and Bob ask the same question, each 
 built only from their own permitted documents. Bob cannot get anything out of Alice's documents,
 however he phrases the question.
 
+## See it in action
+
+The same question — *"What is the salary band for a Senior Engineer?"* — asked by two employees
+of the same company, against the same set of documents:
+
+**Alice (HR)** has access to the salary document, so she gets an answer with its sources cited:
+
+![Alice asks about salary bands and gets an answer with citations](docs/screenshots/alice.png)
+
+**Bob (Engineering)** is not entitled to HR documents. For him they simply do not exist: nothing is
+retrieved, nothing is cited, and the assistant says it has no information. His document list does
+not even show that the salary document is there:
+
+![Bob asks the same question and is told there is no information available to him](docs/screenshots/bob.png)
+
+The screenshots come from a local run with demo data (`./mvnw spring-boot:test-run`, see
+[Running](#running)). The access decision is made from the user's signed token and applied inside
+the database query, before any text reaches the language model.
+
 ### How access is enforced
 
 - The user is identified by a JWT from Keycloak or Microsoft Entra ID. Access rights come only from

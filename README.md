@@ -45,6 +45,12 @@ the database query, before any text reaches the language model.
 - The access filter runs **inside** the pgvector similarity search, not afterwards. Forbidden
   chunks never reach the model, the answer or the citations.
 - A document the user may not read returns `404`, so its existence is not revealed either.
+- Retrieved text and model output are treated as untrusted: an instruction hidden in a document
+  cannot widen access, because access is decided before the model runs.
+- Citations are built from the chunks actually retrieved for the caller, never from what the model
+  writes in its answer.
+- **Access matrix tests** check that Bob cannot reach Alice's documents through search, chat, `GET`
+  or `DELETE`, over HTTP against a real pgvector database.
 
 ## Stack
 
